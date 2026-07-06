@@ -344,12 +344,14 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [notification, setNotification] = useState<{ message: string; type: "info" | "success" } | null>(null);
   const [recentLogs, setRecentLogs] = useState<{ timestamp: string; action: string; details: string }[]>([]);
 
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
   const fetchDashboardData = async () => {
     try {
       const [prodRes, ordRes, statRes] = await Promise.all([
-        fetch("http://localhost:5000/api/products"),
-        fetch("http://localhost:5000/api/orders"),
-        fetch("http://localhost:5000/api/analytics/stats")
+        fetch(`${apiBaseUrl}/api/products`),
+        fetch(`${apiBaseUrl}/api/orders`),
+        fetch(`${apiBaseUrl}/api/analytics/stats`)
       ]);
 
       if (prodRes.ok && ordRes.ok && statRes.ok) {
@@ -395,7 +397,7 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   // Auth Operations
   const login = async (password: string): Promise<boolean> => {
     try {
-      const res = await fetch("http://localhost:5000/api/auth/admin/login", {
+      const res = await fetch(`${apiBaseUrl}/api/auth/admin/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ password })
@@ -435,7 +437,7 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   // Product CRUD
   const addProduct = async (productData: Omit<Product, "id" | "rating" | "reviewsCount">) => {
     try {
-      const res = await fetch("http://localhost:5000/api/products", {
+      const res = await fetch(`${apiBaseUrl}/api/products`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(productData)
@@ -451,7 +453,7 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const updateProduct = async (id: string, updatedProduct: Partial<Product>) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/products/${id}`, {
+      const res = await fetch(`${apiBaseUrl}/api/products/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updatedProduct)
@@ -468,7 +470,7 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const deleteProduct = async (id: string) => {
     const targetProduct = products.find((p) => p.id === id);
     try {
-      const res = await fetch(`http://localhost:5000/api/products/${id}`, {
+      const res = await fetch(`${apiBaseUrl}/api/products/${id}`, {
         method: "DELETE"
       });
       if (res.ok) {
@@ -485,7 +487,7 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   // Order Status Updates
   const updateOrderStatus = async (id: string, status: "Pending" | "Shipped" | "Delivered") => {
     try {
-      const res = await fetch(`http://localhost:5000/api/orders/${id}/status`, {
+      const res = await fetch(`${apiBaseUrl}/api/orders/${id}/status`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status })
@@ -511,7 +513,7 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   // Simulated purchase notification trigger (e.g. from Website storefront)
   const simulatePurchase = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/analytics/simulate", {
+      const res = await fetch(`${apiBaseUrl}/api/analytics/simulate`, {
         method: "POST"
       });
       if (res.ok) {

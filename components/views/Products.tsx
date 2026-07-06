@@ -40,6 +40,7 @@ export default function Products() {
   const [colorHex, setColorHex] = useState("#000000");
   const [colorNameEn, setColorNameEn] = useState("Stealth Black");
   const [colorNameBn, setColorNameBn] = useState("কালো");
+  const [imageUrl, setImageUrl] = useState("");
 
   // Filtering products
   const filteredProducts = products.filter((p) => {
@@ -81,6 +82,7 @@ export default function Products() {
     setColorHex("#000000");
     setColorNameEn("Stealth Black");
     setColorNameBn("কালো");
+    setImageUrl("");
     setTargetProduct(null);
   };
 
@@ -115,6 +117,7 @@ export default function Products() {
       setColorNameBn("কালো");
     }
     
+    setImageUrl(product.images && product.images.length > 0 ? product.images[0] : "");
     setIsEditOpen(true);
   };
 
@@ -134,7 +137,7 @@ export default function Products() {
       costUSD: parseFloat(costUSD) || 0,
       priceUSD: parseFloat(priceUSD) || 0,
       discountPercent: discountPercent || 0,
-      images: ["/images/logo.png"], // fallback placeholder
+      images: imageUrl ? [imageUrl.trim()] : ["/images/logo.png"], // custom image input
       sizes,
       colors: [{ nameEn: colorNameEn, nameBn: colorNameBn, hex: colorHex }],
       stock: stock || 0
@@ -160,6 +163,7 @@ export default function Products() {
       costUSD: parseFloat(costUSD) || 0,
       priceUSD: parseFloat(priceUSD) || 0,
       discountPercent: discountPercent || 0,
+      images: imageUrl ? [imageUrl.trim()] : targetProduct.images,
       sizes,
       colors: [{ nameEn: colorNameEn, nameBn: colorNameBn, hex: colorHex }],
       stock: stock || 0
@@ -370,15 +374,39 @@ export default function Products() {
                 </div>
               </div>
 
-              {/* Description EN */}
+              {/* Description EN and BN */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[11px] font-bold text-slate-500 uppercase">Description (English)</label>
+                  <textarea
+                    value={descriptionEn}
+                    onChange={(e) => setDescriptionEn(e.target.value)}
+                    placeholder="Enter details of the product attributes..."
+                    rows={2}
+                    className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs outline-none focus:border-brand-primary resize-none"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[11px] font-bold text-slate-500 uppercase">Description (Bangla)</label>
+                  <textarea
+                    value={descriptionBn}
+                    onChange={(e) => setDescriptionBn(e.target.value)}
+                    placeholder="বাংলায় পণ্যের বিবরণ লিখুন..."
+                    rows={2}
+                    className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs outline-none focus:border-brand-primary resize-none"
+                  />
+                </div>
+              </div>
+
+              {/* Product Image URL */}
               <div className="space-y-1">
-                <label className="text-[11px] font-bold text-slate-500 uppercase">Description (English)</label>
-                <textarea
-                  value={descriptionEn}
-                  onChange={(e) => setDescriptionEn(e.target.value)}
-                  placeholder="Enter details of the product attributes..."
-                  rows={2}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs outline-none focus:border-brand-primary resize-none"
+                <label className="text-[11px] font-bold text-slate-500 uppercase">Product Image URL</label>
+                <input
+                  type="text"
+                  value={imageUrl}
+                  onChange={(e) => setImageUrl(e.target.value)}
+                  placeholder="e.g. /images/products/my_product.png or https://example.com/image.jpg"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs outline-none focus:border-brand-primary"
                 />
               </div>
 
@@ -580,13 +608,35 @@ export default function Products() {
                 </div>
               </div>
 
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[11px] font-bold text-slate-500 uppercase">Description (English)</label>
+                  <textarea
+                    value={descriptionEn}
+                    onChange={(e) => setDescriptionEn(e.target.value)}
+                    rows={2}
+                    className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs outline-none focus:border-brand-primary resize-none"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[11px] font-bold text-slate-500 uppercase">Description (Bangla)</label>
+                  <textarea
+                    value={descriptionBn}
+                    onChange={(e) => setDescriptionBn(e.target.value)}
+                    rows={2}
+                    className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs outline-none focus:border-brand-primary resize-none"
+                  />
+                </div>
+              </div>
+
               <div className="space-y-1">
-                <label className="text-[11px] font-bold text-slate-500 uppercase">Description (English)</label>
-                <textarea
-                  value={descriptionEn}
-                  onChange={(e) => setDescriptionEn(e.target.value)}
-                  rows={2}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs outline-none focus:border-brand-primary resize-none"
+                <label className="text-[11px] font-bold text-slate-500 uppercase">Product Image URL</label>
+                <input
+                  type="text"
+                  value={imageUrl}
+                  onChange={(e) => setImageUrl(e.target.value)}
+                  placeholder="e.g. /images/products/my_product.png or https://example.com/image.jpg"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs outline-none focus:border-brand-primary"
                 />
               </div>
 
