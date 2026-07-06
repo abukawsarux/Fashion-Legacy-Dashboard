@@ -41,6 +41,48 @@ export default function Products() {
   const [colorNameEn, setColorNameEn] = useState("Stealth Black");
   const [colorNameBn, setColorNameBn] = useState("কালো");
   const [imageUrl, setImageUrl] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadError("Image must be smaller than 5MB.");
+      return;
+    }
+
+    setIsUploading(true);
+    setUploadError(null);
+
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      try {
+        const base64String = reader.result as string;
+        const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+        const res = await fetch(`${apiBaseUrl}/api/products/upload`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ image: base64String })
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          setImageUrl(data.imageUrl);
+        } else {
+          const errData = await res.json();
+          setUploadError(errData.error || "Upload failed.");
+        }
+      } catch (err) {
+        console.error("Upload error", err);
+        setUploadError("Failed to upload image. Server unreachable.");
+      } finally {
+        setIsUploading(false);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
 
   // Filtering products
   const filteredProducts = products.filter((p) => {
@@ -83,6 +125,8 @@ export default function Products() {
     setColorNameEn("Stealth Black");
     setColorNameBn("কালো");
     setImageUrl("");
+    setIsUploading(false);
+    setUploadError(null);
     setTargetProduct(null);
   };
 
@@ -266,8 +310,22 @@ export default function Products() {
                     <tr key={p.id} className="hover:bg-slate-50/40 transition-colors">
                       <td className="py-4 px-5 font-semibold text-slate-500">{p.id}</td>
                       <td className="py-4 px-5">
-                        <div className="font-bold text-slate-800">{p.nameEn}</div>
-                        <div className="text-[10px] text-slate-400 font-medium">{p.nameBn}</div>
+                        <div className="flex items-center gap-3">
+                          <div className="h-10 w-10 relative rounded-lg overflow-hidden border border-slate-100 bg-slate-50 flex-shrink-0">
+                            <img
+                              src={p.images && p.images[0] ? (p.images[0].startsWith("/") && !p.images[0].startsWith("/images/") ? `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}${p.images[0]}` : p.images[0]) : "/images/logo.png"}
+                              alt={p.nameEn}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).src = "/images/logo.png";
+                              }}
+                            />
+                          </div>
+                          <div>
+                            <div className="font-bold text-slate-800">{p.nameEn}</div>
+                            <div className="text-[10px] text-slate-400 font-medium">{p.nameBn}</div>
+                          </div>
+                        </div>
                       </td>
                       <td className="py-4 px-5">
                         <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-bold text-[9px]">
@@ -398,16 +456,79 @@ export default function Products() {
                 </div>
               </div>
 
-              {/* Product Image URL */}
-              <div className="space-y-1">
-                <label className="text-[11px] font-bold text-slate-500 uppercase">Product Image URL</label>
-                <input
-                  type="text"
-                  value={imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value)}
-                  placeholder="e.g. /images/products/my_product.png or https://example.com/image.jpg"
-                  className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs outline-none focus:border-brand-primary"
-                />
+              {/* Product Image Upload & URL */}
+              <div className="space-y-2">
+                <label className="text-[11px] font-bold text-slate-500 uppercase block">Product Image *</label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                  
+                  {/* Left: Drag & Drop Box */}
+                  <div className="relative border-2 border-dashed border-slate-300 hover:border-brand-primary rounded-xl p-4 flex flex-col items-center justify-center bg-white cursor-pointer transition-colors min-h-[110px]">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      disabled={isUploading}
+                      className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
+                    />
+                    {isUploading ? (
+                      <div className="flex flex-col items-center gap-2">
+                        <div className="animate-spin rounded-full h-6 w-6 border-2 border-brand-primary border-t-transparent"></div>
+                        <span className="text-[10px] text-slate-500 font-bold">Uploading to Server...</span>
+                      </div>
+                    ) : (
+                      <div className="text-center space-y-1">
+                        <Plus size={20} className="text-slate-400 mx-auto" />
+                        <p className="text-[10px] font-bold text-slate-700">Choose Image File</p>
+                        <p className="text-[9px] text-slate-400">PNG, JPG, WEBP up to 5MB</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Right: URL Input & Preview */}
+                  <div className="space-y-3">
+                    <div className="space-y-1">
+                      <span className="text-[9px] font-bold text-slate-400 uppercase">Or Paste Image URL</span>
+                      <input
+                        type="text"
+                        value={imageUrl}
+                        onChange={(e) => setImageUrl(e.target.value)}
+                        placeholder="e.g. /images/products/my_product.png"
+                        className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs outline-none focus:border-brand-primary"
+                      />
+                    </div>
+
+                    {/* Image Preview thumbnail */}
+                    {imageUrl && (
+                      <div className="flex items-center gap-3 bg-white p-2 rounded-xl border border-slate-100 shadow-sm animate-in fade-in slide-in-from-bottom-2 duration-200">
+                        <div className="h-10 w-10 relative rounded-lg overflow-hidden border border-slate-200 bg-slate-100 flex-shrink-0">
+                          <img
+                            src={imageUrl.startsWith("/") && !imageUrl.startsWith("/images/") ? `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}${imageUrl}` : imageUrl}
+                            alt="Preview"
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = "/images/logo.png";
+                            }}
+                          />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[9px] font-bold text-slate-800 truncate">{imageUrl.split("/").pop()}</p>
+                          <button
+                            type="button"
+                            onClick={() => setImageUrl("")}
+                            className="text-[9px] font-bold text-red-600 hover:text-red-800 transition-colors"
+                          >
+                            Remove Image
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {uploadError && (
+                      <p className="text-[9px] font-bold text-red-600 animate-pulse">{uploadError}</p>
+                    )}
+                  </div>
+                  
+                </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -629,15 +750,79 @@ export default function Products() {
                 </div>
               </div>
 
-              <div className="space-y-1">
-                <label className="text-[11px] font-bold text-slate-500 uppercase">Product Image URL</label>
-                <input
-                  type="text"
-                  value={imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value)}
-                  placeholder="e.g. /images/products/my_product.png or https://example.com/image.jpg"
-                  className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs outline-none focus:border-brand-primary"
-                />
+              {/* Product Image Upload & URL */}
+              <div className="space-y-2">
+                <label className="text-[11px] font-bold text-slate-500 uppercase block">Product Image *</label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                  
+                  {/* Left: Drag & Drop Box */}
+                  <div className="relative border-2 border-dashed border-slate-300 hover:border-brand-primary rounded-xl p-4 flex flex-col items-center justify-center bg-white cursor-pointer transition-colors min-h-[110px]">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      disabled={isUploading}
+                      className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
+                    />
+                    {isUploading ? (
+                      <div className="flex flex-col items-center gap-2">
+                        <div className="animate-spin rounded-full h-6 w-6 border-2 border-brand-primary border-t-transparent"></div>
+                        <span className="text-[10px] text-slate-500 font-bold">Uploading to Server...</span>
+                      </div>
+                    ) : (
+                      <div className="text-center space-y-1">
+                        <Plus size={20} className="text-slate-400 mx-auto" />
+                        <p className="text-[10px] font-bold text-slate-700">Choose Image File</p>
+                        <p className="text-[9px] text-slate-400">PNG, JPG, WEBP up to 5MB</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Right: URL Input & Preview */}
+                  <div className="space-y-3">
+                    <div className="space-y-1">
+                      <span className="text-[9px] font-bold text-slate-400 uppercase">Or Paste Image URL</span>
+                      <input
+                        type="text"
+                        value={imageUrl}
+                        onChange={(e) => setImageUrl(e.target.value)}
+                        placeholder="e.g. /images/products/my_product.png"
+                        className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs outline-none focus:border-brand-primary"
+                      />
+                    </div>
+
+                    {/* Image Preview thumbnail */}
+                    {imageUrl && (
+                      <div className="flex items-center gap-3 bg-white p-2 rounded-xl border border-slate-100 shadow-sm animate-in fade-in slide-in-from-bottom-2 duration-200">
+                        <div className="h-10 w-10 relative rounded-lg overflow-hidden border border-slate-200 bg-slate-100 flex-shrink-0">
+                          <img
+                            src={imageUrl.startsWith("/") && !imageUrl.startsWith("/images/") ? `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}${imageUrl}` : imageUrl}
+                            alt="Preview"
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = "/images/logo.png";
+                            }}
+                          />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[9px] font-bold text-slate-800 truncate">{imageUrl.split("/").pop()}</p>
+                          <button
+                            type="button"
+                            onClick={() => setImageUrl("")}
+                            className="text-[9px] font-bold text-red-600 hover:text-red-800 transition-colors"
+                          >
+                            Remove Image
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {uploadError && (
+                      <p className="text-[9px] font-bold text-red-600 animate-pulse">{uploadError}</p>
+                    )}
+                  </div>
+                  
+                </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
