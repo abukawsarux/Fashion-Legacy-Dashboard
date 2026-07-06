@@ -71,7 +71,7 @@ interface DashboardContextType {
   isAuthenticated: boolean;
   loginError: string | null;
   notification: { message: string; type: "info" | "success" } | null;
-  login: (password: string) => boolean;
+  login: (password: string) => Promise<boolean>;
   logout: () => void;
   updateAdminProfile: (name: string, email: string, avatar: string) => void;
   addProduct: (product: Omit<Product, "id" | "rating" | "reviewsCount">) => void;
@@ -80,6 +80,7 @@ interface DashboardContextType {
   updateOrderStatus: (id: string, status: "Pending" | "Shipped" | "Delivered") => void;
   simulatePurchase: () => void;
   clearNotification: () => void;
+  recentLogs: { timestamp: string; action: string; details: string }[];
 }
 
 const DashboardContext = createContext<DashboardContextType | undefined>(undefined);
@@ -341,32 +342,50 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [loginError, setLoginError] = useState<string | null>(null);
   const [notification, setNotification] = useState<{ message: string; type: "info" | "success" } | null>(null);
+  const [recentLogs, setRecentLogs] = useState<{ timestamp: string; action: string; details: string }[]>([]);
+
+  const fetchDashboardData = async () => {
+    try {
+      const [prodRes, ordRes, statRes] = await Promise.all([
+        fetch("http://localhost:5000/api/products"),
+        fetch("http://localhost:5000/api/orders"),
+        fetch("http://localhost:5000/api/analytics/stats")
+      ]);
+
+      if (prodRes.ok && ordRes.ok && statRes.ok) {
+        const prodData = await prodRes.json();
+        const ordData = await ordRes.json();
+        const statData = await statRes.json();
+
+        setProducts(prodData);
+        setOrders(ordData);
+        setTrafficData(statData.traffic);
+        setRecentLogs(statData.recentLogs || []);
+      }
+    } catch (e) {
+      console.error("Failed to load dashboard data from Backend API", e);
+    }
+  };
 
   // Load from localStorage
   useEffect(() => {
-    const savedProducts = localStorage.getItem("fl_dashboard_products");
-    const savedOrders = localStorage.getItem("fl_dashboard_orders");
-    const savedTraffic = localStorage.getItem("fl_dashboard_traffic");
     const savedAdmin = localStorage.getItem("fl_dashboard_admin");
     const savedAuth = localStorage.getItem("fl_dashboard_auth");
 
-    if (savedProducts) setProducts(JSON.parse(savedProducts));
-    if (savedOrders) setOrders(JSON.parse(savedOrders));
-    if (savedTraffic) setTrafficData(JSON.parse(savedTraffic));
-    if (savedAdmin) setAdminUser(JSON.parse(savedAdmin));
-    if (savedAuth) setIsAuthenticated(JSON.parse(savedAuth));
+    if (savedAuth && JSON.parse(savedAuth) === true) {
+      setIsAuthenticated(true);
+      if (savedAdmin) setAdminUser(JSON.parse(savedAdmin));
+    }
   }, []);
 
-  // Sync to localStorage helpers
-  const saveProducts = (newProducts: Product[]) => {
-    setProducts(newProducts);
-    localStorage.setItem("fl_dashboard_products", JSON.stringify(newProducts));
-  };
-
-  const saveOrders = (newOrders: Order[]) => {
-    setOrders(newOrders);
-    localStorage.setItem("fl_dashboard_orders", JSON.stringify(newOrders));
-  };
+  // Poll for updates if authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchDashboardData();
+      const interval = setInterval(fetchDashboardData, 10000);
+      return () => clearInterval(interval);
+    }
+  }, [isAuthenticated]);
 
   const saveAdmin = (newAdmin: AdminUser) => {
     setAdminUser(newAdmin);
@@ -374,27 +393,28 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   };
 
   // Auth Operations
-  const login = (password: string): boolean => {
-    // Authenticate with specific admin credentials
-    if (password === "sajolbd" || password === "abubd") {
-      setIsAuthenticated(true);
-      setLoginError(null);
-      localStorage.setItem("fl_dashboard_auth", JSON.stringify(true));
-      
-      const name = password === "sajolbd" ? "Sajol" : "Abu Kawsar";
-      const email = password === "sajolbd" ? "sajol@fashionlegacy.live" : "abu@fashionlegacy.live";
-      
-      const updatedAdmin = { 
-        ...adminUser, 
-        name, 
-        email, 
-        lastLogin: new Date().toISOString() 
-      };
-      saveAdmin(updatedAdmin);
-      triggerNotification(`Login successful. Welcome back, ${name}!`, "success");
-      return true;
-    } else {
-      setLoginError("Incorrect password. Access denied.");
+  const login = async (password: string): Promise<boolean> => {
+    try {
+      const res = await fetch("http://localhost:5000/api/auth/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password })
+      });
+      const data = await res.json();
+      if (data.success && data.admin) {
+        setIsAuthenticated(true);
+        setLoginError(null);
+        localStorage.setItem("fl_dashboard_auth", JSON.stringify(true));
+        saveAdmin(data.admin);
+        triggerNotification(`Login successful. Welcome back, ${data.admin.name}!`, "success");
+        return true;
+      } else {
+        setLoginError(data.error || "Incorrect password. Access denied.");
+        return false;
+      }
+    } catch (e) {
+      console.error("Admin login API failed", e);
+      setLoginError("Failed to connect to authentication server.");
       return false;
     }
   };
@@ -402,6 +422,7 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const logout = () => {
     setIsAuthenticated(false);
     localStorage.setItem("fl_dashboard_auth", JSON.stringify(false));
+    localStorage.removeItem("fl_dashboard_admin");
     triggerNotification("Logged out successfully.", "info");
   };
 
@@ -412,38 +433,70 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   };
 
   // Product CRUD
-  const addProduct = (productData: Omit<Product, "id" | "rating" | "reviewsCount">) => {
-    const newProduct: Product = {
-      ...productData,
-      id: `prod-${productData.category.split("_")[1]}-${Date.now().toString().slice(-4)}`,
-      rating: 5.0,
-      reviewsCount: 0
-    };
-    const updated = [newProduct, ...products];
-    saveProducts(updated);
-    triggerNotification(`Product "${productData.nameEn}" added.`, "success");
+  const addProduct = async (productData: Omit<Product, "id" | "rating" | "reviewsCount">) => {
+    try {
+      const res = await fetch("http://localhost:5000/api/products", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(productData)
+      });
+      if (res.ok) {
+        fetchDashboardData();
+        triggerNotification(`Product "${productData.nameEn}" added successfully.`, "success");
+      }
+    } catch (e) {
+      console.error("Failed to add product", e);
+    }
   };
 
-  const updateProduct = (id: string, updatedProduct: Partial<Product>) => {
-    const updated = products.map((p) => (p.id === id ? { ...p, ...updatedProduct } : p));
-    saveProducts(updated);
-    triggerNotification(`Product was successfully updated.`, "success");
+  const updateProduct = async (id: string, updatedProduct: Partial<Product>) => {
+    try {
+      const res = await fetch(`http://localhost:5000/api/products/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedProduct)
+      });
+      if (res.ok) {
+        fetchDashboardData();
+        triggerNotification(`Product was successfully updated.`, "success");
+      }
+    } catch (e) {
+      console.error("Failed to update product", e);
+    }
   };
 
-  const deleteProduct = (id: string) => {
+  const deleteProduct = async (id: string) => {
     const targetProduct = products.find((p) => p.id === id);
-    const updated = products.filter((p) => p.id !== id);
-    saveProducts(updated);
-    if (targetProduct) {
-      triggerNotification(`Product "${targetProduct.nameEn}" deleted.`, "info");
+    try {
+      const res = await fetch(`http://localhost:5000/api/products/${id}`, {
+        method: "DELETE"
+      });
+      if (res.ok) {
+        fetchDashboardData();
+        if (targetProduct) {
+          triggerNotification(`Product "${targetProduct.nameEn}" deleted.`, "info");
+        }
+      }
+    } catch (e) {
+      console.error("Failed to delete product", e);
     }
   };
 
   // Order Status Updates
-  const updateOrderStatus = (id: string, status: "Pending" | "Shipped" | "Delivered") => {
-    const updated = orders.map((o) => (o.id === id ? { ...o, status } : o));
-    saveOrders(updated);
-    triggerNotification(`Order #${id.split("-")[1] || id} status updated to ${status}.`, "success");
+  const updateOrderStatus = async (id: string, status: "Pending" | "Shipped" | "Delivered") => {
+    try {
+      const res = await fetch(`http://localhost:5000/api/orders/${id}/status`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status })
+      });
+      if (res.ok) {
+        fetchDashboardData();
+        triggerNotification(`Order #${id.split("-")[1] || id} status updated to ${status}.`, "success");
+      }
+    } catch (e) {
+      console.error("Failed to update order status", e);
+    }
   };
 
   // Notification triggers
@@ -456,71 +509,19 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   };
 
   // Simulated purchase notification trigger (e.g. from Website storefront)
-  const simulatePurchase = () => {
-    // Pick a random product
-    const randomProduct = products[Math.floor(Math.random() * products.length)];
-    if (!randomProduct) return;
-
-    const names = ["Sabbir Ahmed", "Nusrat Jahan", "Kamrul Islam", "Fariha Sultana", "Jamil Hossain", "Sadia Afrin"];
-    const cities = ["Uttara, Dhaka", "Mirpur-10, Dhaka", "Sylhet Sadar, Sylhet", "Khulna City, Khulna", "Rajshahi Town, Rajshahi"];
-    
-    const randomName = names[Math.floor(Math.random() * names.length)];
-    const randomCity = cities[Math.floor(Math.random() * cities.length)];
-    const quantity = Math.floor(Math.random() * 2) + 1;
-    const randomSize = randomProduct.sizes[Math.floor(Math.random() * randomProduct.sizes.length)] || "M";
-    const randomColor = randomProduct.colors[Math.floor(Math.random() * randomProduct.colors.length)] || { nameEn: "Default" };
-
-    const itemTotal = Number((randomProduct.priceUSD * quantity).toFixed(2));
-    const costTotal = Number((randomProduct.costUSD * quantity).toFixed(2));
-
-    const newOrder: Order = {
-      id: `ORD-${Math.floor(1000 + Math.random() * 9000)}`,
-      customerName: randomName,
-      customerEmail: `${randomName.toLowerCase().replace(" ", "")}@mock.com`,
-      customerAddress: `${randomCity}, Bangladesh`,
-      items: [
-        {
-          productId: randomProduct.id,
-          nameEn: randomProduct.nameEn,
-          nameBn: randomProduct.nameBn,
-          priceUSD: randomProduct.priceUSD,
-          quantity,
-          size: randomSize,
-          colorEn: randomColor.nameEn
-        }
-      ],
-      totalUSD: itemTotal,
-      costUSD: costTotal,
-      createdAt: new Date().toISOString(),
-      status: "Pending"
-    };
-
-    // Prepend to orders list
-    const newOrders = [newOrder, ...orders];
-    saveOrders(newOrders);
-
-    // Subtract from product stock
-    const updatedProducts = products.map((p) => {
-      if (p.id === randomProduct.id) {
-        const newStock = Math.max(0, p.stock - quantity);
-        return { ...p, stock: newStock };
+  const simulatePurchase = async () => {
+    try {
+      const res = await fetch("http://localhost:5000/api/analytics/simulate", {
+        method: "POST"
+      });
+      if (res.ok) {
+        const data = await res.json();
+        fetchDashboardData();
+        triggerNotification(`New Purchase simulated! ${data.order?.customerName} bought ${data.order?.items[0]?.nameEn}`, "success");
       }
-      return p;
-    });
-    saveProducts(updatedProducts);
-
-    // Add conversion metrics to today's traffic
-    const updatedTraffic = [...trafficData];
-    const todayIndex = updatedTraffic.length - 1;
-    if (todayIndex >= 0) {
-      updatedTraffic[todayIndex].conversions += 1;
-      updatedTraffic[todayIndex].visitors += Math.floor(Math.random() * 3) + 1;
-      updatedTraffic[todayIndex].pageViews += Math.floor(Math.random() * 10) + 5;
-      setTrafficData(updatedTraffic);
-      localStorage.setItem("fl_dashboard_traffic", JSON.stringify(updatedTraffic));
+    } catch (e) {
+      console.error("Failed to simulate purchase", e);
     }
-
-    triggerNotification(`New Purchase alert! ${randomName} bought ${quantity}x "${randomProduct.nameEn}"`, "success");
   };
 
   return (
@@ -541,7 +542,8 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         deleteProduct,
         updateOrderStatus,
         simulatePurchase,
-        clearNotification
+        clearNotification,
+        recentLogs
       }}
     >
       {children}

@@ -15,19 +15,10 @@ import {
 } from "lucide-react";
 
 export default function Profile() {
-  const { adminUser, updateAdminProfile, logout } = useDashboard();
+  const { adminUser, updateAdminProfile, logout, recentLogs } = useDashboard();
   const [name, setName] = useState(adminUser.name);
   const [email, setEmail] = useState(adminUser.email);
   const [avatar, setAvatar] = useState(adminUser.avatar);
-
-  // Mock static system activity logs
-  const activityLogs = [
-    { action: "Admin profile credentials updated", time: "Just now", type: "system" },
-    { action: "Product CRUD: Added 'Aero-Luxury Chronograph Watch'", time: "30 mins ago", type: "crud" },
-    { action: "Order status updated to 'Delivered' for ORD-2889", time: "2 hours ago", type: "order" },
-    { action: "System automatic database backup completed", time: "6 hours ago", type: "system" },
-    { action: "User session authenticated for Raihan Chowdhury", time: "10 hours ago", type: "security" },
-  ];
 
   const handleUpdate = (e: React.FormEvent) => {
     e.preventDefault();
@@ -173,20 +164,41 @@ export default function Profile() {
         </div>
 
         <div className="space-y-3.5">
-          {activityLogs.map((log, idx) => (
-            <div key={idx} className="flex justify-between items-start gap-4 text-xs">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div className={`h-2 w-2 rounded-full flex-shrink-0 ${
-                  log.type === "crud" ? "bg-amber-500" :
-                  log.type === "order" ? "bg-emerald-500" :
-                  log.type === "security" ? "bg-indigo-500" :
-                  "bg-slate-400"
-                }`} />
-                <span className="font-semibold text-slate-700 truncate">{log.action}</span>
-              </div>
-              <span className="text-[10px] text-slate-400 font-bold flex-shrink-0">{log.time}</span>
-            </div>
-          ))}
+          {recentLogs.length > 0 ? (
+            recentLogs.map((log, idx) => {
+              const date = new Date(log.timestamp);
+              const timeStr = date.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+              const dateStr = date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+              
+              const isCrud = log.action.toLowerCase().includes("product");
+              const isOrder = log.action.toLowerCase().includes("order");
+              const isSecurity = log.action.toLowerCase().includes("auth") || log.action.toLowerCase().includes("login");
+
+              return (
+                <div key={idx} className="flex justify-between items-start gap-4 text-xs py-1 border-b border-slate-50 last:border-0">
+                  <div className="flex items-start gap-2.5 min-w-0">
+                    <div className={`h-2 w-2 rounded-full mt-1.5 flex-shrink-0 ${
+                      isCrud ? "bg-amber-500" :
+                      isOrder ? "bg-emerald-500" :
+                      isSecurity ? "bg-indigo-500" :
+                      "bg-slate-400"
+                    }`} />
+                    <div className="min-w-0">
+                      <span className="font-bold text-slate-800 block leading-tight">{log.action}</span>
+                      <span className="text-[10px] text-slate-500 block mt-0.5 leading-normal">{log.details}</span>
+                    </div>
+                  </div>
+                  <span className="text-[9px] text-slate-400 font-bold flex-shrink-0 text-right leading-relaxed">
+                    {dateStr}
+                    <br />
+                    {timeStr}
+                  </span>
+                </div>
+              );
+            })
+          ) : (
+            <div className="text-slate-400 text-center py-4 font-semibold">No operational logs recorded.</div>
+          )}
         </div>
       </div>
     </div>

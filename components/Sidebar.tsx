@@ -57,8 +57,12 @@ export default function Sidebar({
               />
             </div>
           ) : (
-            <div className="h-8 w-8 bg-brand-primary rounded-lg flex items-center justify-center font-bold text-white shadow-md shadow-brand-primary/20">
-              FL
+            <div className="h-8 w-8 relative flex items-center justify-center overflow-hidden rounded-lg bg-transparent p-0">
+              <img
+                src="/favicon.ico"
+                alt="Favicon"
+                className="w-full h-full object-contain"
+              />
             </div>
           )}
         </div>
