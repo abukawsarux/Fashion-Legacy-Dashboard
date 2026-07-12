@@ -198,12 +198,10 @@ export default function Categories() {
               {/* Image Preview & ID Tag */}
               <div className="p-4 bg-slate-50 border-b border-slate-100 flex items-center justify-center relative aspect-[4/3] overflow-hidden">
                 <div className="relative h-20 w-20 rounded-full overflow-hidden border border-slate-200/50 shadow-inner bg-white flex items-center justify-center">
-                  <Image
+                  <img
                     src={getImageUrl(cat.image)}
                     alt={cat.nameEn}
-                    fill
-                    sizes="80px"
-                    className="object-cover group-hover:scale-105 transition-transform duration-300"
+                    className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                 </div>
                 <span className="absolute top-2 right-2 px-2 py-0.5 rounded-md bg-slate-800 text-white font-mono text-[9px] font-bold uppercase tracking-wider">
@@ -283,7 +281,7 @@ export default function Categories() {
                 <div className="flex items-center gap-4">
                   {image ? (
                     <div className="relative h-16 w-16 rounded-xl overflow-hidden border border-slate-200 flex-shrink-0 bg-white">
-                      <Image src={getImageUrl(image)} alt="preview" fill className="object-cover" />
+                      <img src={getImageUrl(image)} alt="preview" className="h-full w-full object-cover" />
                       <button
                         type="button"
                         onClick={() => setImage("")}
@@ -376,7 +374,7 @@ export default function Categories() {
                 <div className="flex items-center gap-4">
                   {image ? (
                     <div className="relative h-16 w-16 rounded-xl overflow-hidden border border-slate-200 flex-shrink-0 bg-white">
-                      <Image src={getImageUrl(image)} alt="preview" fill className="object-cover" />
+                      <img src={getImageUrl(image)} alt="preview" className="h-full w-full object-cover" />
                       <button
                         type="button"
                         onClick={() => setImage("")}
