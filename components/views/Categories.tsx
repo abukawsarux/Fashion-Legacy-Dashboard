@@ -21,11 +21,12 @@ export default function Categories() {
     if (!imgStr) return "/images/categories/all.png";
     if (imgStr.startsWith("data:")) return imgStr;
     if (imgStr.startsWith("/") && !imgStr.startsWith("/images/")) {
-      const apiBaseUrl = 
+      const rawUrl = 
         process.env.NEXT_PUBLIC_API_URL || 
         (typeof window !== "undefined" && window.location.hostname.includes("fashionlegacy.live") 
-          ? "https://backend-sabbir-nasir.vercel.app" 
+          ? "https://fashion-legacy-backend.vercel.app" 
           : "http://localhost:5000");
+      const apiBaseUrl = rawUrl.endsWith("/") ? rawUrl.slice(0, -1) : rawUrl;
       return `${apiBaseUrl}${imgStr}`;
     }
     return imgStr;

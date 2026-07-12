@@ -15,11 +15,12 @@ import {
 
 export default function Products() {
   const { products, addProduct, updateProduct, deleteProduct, categories } = useDashboard();
-  const apiBaseUrl = 
+  const rawApiUrl = 
     process.env.NEXT_PUBLIC_API_URL || 
     (typeof window !== "undefined" && window.location.hostname.includes("fashionlegacy.live") 
-      ? "https://backend-sabbir-nasir.vercel.app" 
+      ? "https://fashion-legacy-backend.vercel.app" 
       : "http://localhost:5000");
+  const apiBaseUrl = rawApiUrl.endsWith("/") ? rawApiUrl.slice(0, -1) : rawApiUrl;
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
   
