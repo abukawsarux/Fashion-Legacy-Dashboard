@@ -15,6 +15,11 @@ import {
 
 export default function Products() {
   const { products, addProduct, updateProduct, deleteProduct, categories } = useDashboard();
+  const apiBaseUrl = 
+    process.env.NEXT_PUBLIC_API_URL || 
+    (typeof window !== "undefined" && window.location.hostname.includes("fashionlegacy.live") 
+      ? "https://backend-sabbir-nasir.vercel.app" 
+      : "http://localhost:5000");
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
   
@@ -60,7 +65,6 @@ export default function Products() {
     reader.onloadend = async () => {
       try {
         const base64String = reader.result as string;
-        const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
         const res = await fetch(`${apiBaseUrl}/api/products/upload`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -313,7 +317,7 @@ export default function Products() {
                         <div className="flex items-center gap-3">
                           <div className="h-10 w-10 relative rounded-lg overflow-hidden border border-slate-100 bg-slate-50 flex-shrink-0">
                             <img
-                              src={p.images && p.images[0] ? (p.images[0].startsWith("/") && !p.images[0].startsWith("/images/") ? `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}${p.images[0]}` : p.images[0]) : "/images/logo.png"}
+                              src={p.images && p.images[0] ? (p.images[0].startsWith("/") && !p.images[0].startsWith("/images/") ? `${apiBaseUrl}${p.images[0]}` : p.images[0]) : "/images/logo.png"}
                               alt={p.nameEn}
                               className="w-full h-full object-cover"
                               onError={(e) => {

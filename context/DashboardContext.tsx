@@ -356,7 +356,11 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [notification, setNotification] = useState<{ message: string; type: "info" | "success" } | null>(null);
   const [recentLogs, setRecentLogs] = useState<{ timestamp: string; action: string; details: string }[]>([]);
 
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  const apiBaseUrl = 
+    process.env.NEXT_PUBLIC_API_URL || 
+    (typeof window !== "undefined" && window.location.hostname.includes("fashionlegacy.live") 
+      ? "https://fashion-legacy-backend.vercel.app/" 
+      : "http://localhost:5000");
 
   const fetchDashboardData = useCallback(async () => {
     try {
