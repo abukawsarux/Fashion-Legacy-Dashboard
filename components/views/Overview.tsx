@@ -9,12 +9,11 @@ import {
   ShoppingBag, 
   ShoppingCart,
   ArrowRight,
-  Play,
   ArrowUpRight
 } from "lucide-react";
 
 export default function Overview({ setCurrentView }: { setCurrentView: (view: string) => void }) {
-  const { products, orders, trafficData, simulatePurchase } = useDashboard();
+  const { products, orders, trafficData } = useDashboard();
 
   // Financial Summaries
   const totalSales = orders.reduce((acc, order) => acc + order.totalUSD, 0);
@@ -48,25 +47,7 @@ export default function Overview({ setCurrentView }: { setCurrentView: (view: st
 
   return (
     <div className="space-y-6">
-      {/* Simulation Banner */}
-      <div className="p-6 rounded-2xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white border border-slate-700 shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <h2 className="text-base font-bold text-slate-100 flex items-center gap-2">
-            <span>Real-time Shop Dashboard Simulator</span>
-            <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] uppercase font-bold border border-emerald-500/30">Active</span>
-          </h2>
-          <p className="text-xs text-slate-300 mt-1 max-w-xl">
-            Simulate customers making purchases on the main e-commerce website. The order details, profit records, inventory stocks, and graphs will update instantly in real-time.
-          </p>
-        </div>
-        <button
-          onClick={simulatePurchase}
-          className="flex items-center gap-2 px-5 py-2.5 bg-[#740108] hover:bg-[#5c0006] text-white rounded-xl text-xs font-black tracking-wide shadow-lg shadow-red-950/40 hover:scale-105 transition-all cursor-pointer"
-        >
-          <Play size={13} fill="currentColor" />
-          <span>Simulate Customer Order</span>
-        </button>
-      </div>
+
 
       {/* KPI Stats Panel */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">

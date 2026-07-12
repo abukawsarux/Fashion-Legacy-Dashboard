@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useDashboard, Product, CATEGORIES } from "../../context/DashboardContext";
+import { useDashboard, Product } from "../../context/DashboardContext";
 import { 
   Plus, 
   Search, 
@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 
 export default function Products() {
-  const { products, addProduct, updateProduct, deleteProduct } = useDashboard();
+  const { products, addProduct, updateProduct, deleteProduct, categories } = useDashboard();
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
   
@@ -31,7 +31,7 @@ export default function Products() {
   const [nameBn, setNameBn] = useState("");
   const [descriptionEn, setDescriptionEn] = useState("");
   const [descriptionBn, setDescriptionBn] = useState("");
-  const [category, setCategory] = useState<Product["category"]>("cat_hot");
+  const [category, setCategory] = useState<string[]>(["cat_hot"]);
   const [costUSD, setCostUSD] = useState("0");
   const [priceUSD, setPriceUSD] = useState("0");
   const [discountPercent, setDiscountPercent] = useState(0);
@@ -86,7 +86,7 @@ export default function Products() {
 
   // Filtering products
   const filteredProducts = products.filter((p) => {
-    const matchesCategory = activeCategory === "all" || p.category === activeCategory;
+    const matchesCategory = activeCategory === "all" || (Array.isArray(p.category) ? p.category.includes(activeCategory) : p.category === activeCategory);
     const matchesSearch = 
       p.nameEn.toLowerCase().includes(searchQuery.toLowerCase()) ||
       p.nameBn.includes(searchQuery) ||
@@ -115,7 +115,7 @@ export default function Products() {
     setNameBn("");
     setDescriptionEn("");
     setDescriptionBn("");
-    setCategory("cat_hot");
+    setCategory(["cat_hot"]);
     setCostUSD("0");
     setPriceUSD("0");
     setDiscountPercent(0);
@@ -143,7 +143,7 @@ export default function Products() {
     setNameBn(product.nameBn);
     setDescriptionEn(product.descriptionEn);
     setDescriptionBn(product.descriptionBn);
-    setCategory(product.category);
+    setCategory(Array.isArray(product.category) ? product.category : [product.category || "cat_hot"]);
     setCostUSD(product.costUSD.toString());
     setPriceUSD(product.priceUSD.toString());
     setDiscountPercent(product.discountPercent);
@@ -269,7 +269,7 @@ export default function Products() {
         >
           All Categories
         </button>
-        {CATEGORIES.map((cat) => (
+        {categories.map((cat) => (
           <button
             key={cat.id}
             onClick={() => setActiveCategory(cat.id)}
@@ -328,9 +328,13 @@ export default function Products() {
                         </div>
                       </td>
                       <td className="py-4 px-5">
-                        <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-bold text-[9px]">
-                          {CATEGORIES.find(c => c.id === p.category)?.nameEn || p.category}
-                        </span>
+                        <div className="flex flex-wrap gap-1">
+                          {(Array.isArray(p.category) ? p.category : [p.category]).map(catId => (
+                            <span key={catId} className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-bold text-[9px] whitespace-nowrap">
+                              {categories.find(c => c.id === catId)?.nameEn || catId}
+                            </span>
+                          ))}
+                        </div>
                       </td>
                       <td className="py-4 px-5 font-semibold text-slate-500">
                         ৳{p.costUSD.toFixed(2)}
@@ -531,20 +535,42 @@ export default function Products() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* Category select */}
-                <div className="space-y-1">
-                  <label className="text-[11px] font-bold text-slate-500 uppercase">Category *</label>
-                  <select
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value as Product["category"])}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs outline-none focus:border-brand-primary bg-white"
-                  >
-                    {CATEGORIES.map(c => (
-                      <option key={c.id} value={c.id}>{c.nameEn}</option>
-                    ))}
-                  </select>
+              {/* Category selector */}
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-bold text-slate-500 uppercase block">Categories * (Select one or more)</label>
+                <div className="flex flex-wrap gap-2">
+                  {categories.map(c => {
+                    const isSelected = category.includes(c.id);
+                    return (
+                      <button
+                        key={c.id}
+                        type="button"
+                        onClick={() => {
+                          const updated = category.includes(c.id)
+                            ? category.filter(id => id !== c.id)
+                            : [...category, c.id];
+                          if (updated.length === 0) return; // Must select at least one
+                          setCategory(updated);
+                        }}
+                        className={`px-3.5 py-2.5 rounded-xl border text-xs font-bold transition-all flex items-center gap-2 cursor-pointer select-none ${
+                          isSelected
+                            ? "border-[#740108] bg-[#740108]/5 text-[#740108] font-black"
+                            : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+                        }`}
+                      >
+                        <div className={`w-3.5 h-3.5 rounded border flex items-center justify-center transition-colors ${
+                          isSelected ? "border-[#740108] bg-[#740108]" : "border-slate-300 bg-white"
+                        }`}>
+                          {isSelected && <Check size={10} className="text-white font-black" />}
+                        </div>
+                        <span>{c.nameEn}</span>
+                      </button>
+                    );
+                  })}
                 </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Stock */}
                 <div className="space-y-1">
                   <label className="text-[11px] font-bold text-slate-500 uppercase">Initial Stock Count</label>
@@ -825,19 +851,42 @@ export default function Products() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-1">
-                  <label className="text-[11px] font-bold text-slate-500 uppercase">Category *</label>
-                  <select
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value as Product["category"])}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs outline-none focus:border-brand-primary bg-white"
-                  >
-                    {CATEGORIES.map(c => (
-                      <option key={c.id} value={c.id}>{c.nameEn}</option>
-                    ))}
-                  </select>
+              {/* Category selector */}
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-bold text-slate-500 uppercase block">Categories * (Select one or more)</label>
+                <div className="flex flex-wrap gap-2">
+                  {categories.map(c => {
+                    const isSelected = category.includes(c.id);
+                    return (
+                      <button
+                        key={c.id}
+                        type="button"
+                        onClick={() => {
+                          const updated = category.includes(c.id)
+                            ? category.filter(id => id !== c.id)
+                            : [...category, c.id];
+                          if (updated.length === 0) return; // Must select at least one
+                          setCategory(updated);
+                        }}
+                        className={`px-3.5 py-2.5 rounded-xl border text-xs font-bold transition-all flex items-center gap-2 cursor-pointer select-none ${
+                          isSelected
+                            ? "border-[#740108] bg-[#740108]/5 text-[#740108] font-black"
+                            : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+                        }`}
+                      >
+                        <div className={`w-3.5 h-3.5 rounded border flex items-center justify-center transition-colors ${
+                          isSelected ? "border-[#740108] bg-[#740108]" : "border-slate-300 bg-white"
+                        }`}>
+                          {isSelected && <Check size={10} className="text-white font-black" />}
+                        </div>
+                        <span>{c.nameEn}</span>
+                      </button>
+                    );
+                  })}
                 </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="text-[11px] font-bold text-slate-500 uppercase">Inventory Stock</label>
                   <input

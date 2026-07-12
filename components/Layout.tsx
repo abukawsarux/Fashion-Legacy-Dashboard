@@ -6,6 +6,7 @@ import Sidebar from "./Sidebar";
 import Header from "./Header";
 import Overview from "./views/Overview";
 import Products from "./views/Products";
+import Categories from "./views/Categories";
 import Orders from "./views/Orders";
 import Analytics from "./views/Analytics";
 import Profile from "./views/Profile";
@@ -48,6 +49,8 @@ export default function Layout() {
     switch (currentView) {
       case "overview":
         return <Overview setCurrentView={setCurrentView} />;
+      case "categories":
+        return <Categories />;
       case "products":
         return <Products />;
       case "orders":

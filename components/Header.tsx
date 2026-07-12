@@ -5,7 +5,6 @@ import { useDashboard } from "../context/DashboardContext";
 import { 
   Menu, 
   Bell, 
-  Play, 
   LogOut, 
   User, 
   ChevronDown
@@ -19,8 +18,7 @@ interface HeaderProps {
 export default function Header({ currentView, toggleMobileMenu }: HeaderProps) {
   const { 
     adminUser, 
-    logout, 
-    simulatePurchase
+    logout
   } = useDashboard();
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
 
@@ -50,16 +48,7 @@ export default function Header({ currentView, toggleMobileMenu }: HeaderProps) {
       {/* Action Utilities */}
       <div className="flex items-center gap-2 md:gap-4">
         
-        {/* Simulate Purchase Action Button */}
-        <button
-          onClick={simulatePurchase}
-          className="flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 bg-[#740108] text-white rounded-xl text-xs md:text-sm font-bold shadow-md shadow-red-900/10 hover:bg-[#5c0006] transition-all hover:scale-[1.02] cursor-pointer"
-          title="Simulate a customer order purchase on the main website"
-        >
-          <Play size={14} fill="currentColor" />
-          <span className="hidden sm:inline">Simulate Order</span>
-          <span className="sm:hidden">Order</span>
-        </button>
+
 
         {/* Profile Dropdown */}
         <div className="relative">

@@ -11,7 +11,8 @@ import {
   LogOut, 
   ChevronLeft, 
   ChevronRight,
-  Sparkles
+  Sparkles,
+  Layers
 } from "lucide-react";
 
 interface SidebarProps {
@@ -30,6 +31,7 @@ export default function Sidebar({
   
   const menuItems = [
     { id: "overview", label: "Overview", icon: LayoutDashboard },
+    { id: "categories", label: "Categories CRUD", icon: Layers },
     { id: "products", label: "Products CRUD", icon: ShoppingBag },
     { id: "orders", label: "Purchases & Orders", icon: ShoppingCart },
     { id: "analytics", label: "Detailed Analytics", icon: BarChart3 },

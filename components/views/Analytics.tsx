@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useDashboard, CATEGORIES } from "../../context/DashboardContext";
+import { useDashboard } from "../../context/DashboardContext";
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 
 export default function Analytics() {
-  const { orders, trafficData, products } = useDashboard();
+  const { orders, trafficData, products, categories } = useDashboard();
   const [activeChart, setActiveChart] = useState<"financial" | "traffic">("financial");
 
   // Financial calculations
@@ -33,8 +33,10 @@ export default function Analytics() {
     o.items.forEach((item) => {
       // Find item category
       const prod = products.find(p => p.id === item.productId);
-      const catId = prod?.category || "other";
-      categorySales[catId] = (categorySales[catId] || 0) + (item.priceUSD * item.quantity);
+      const categories = Array.isArray(prod?.category) ? prod.category : (prod?.category ? [prod.category] : ["other"]);
+      categories.forEach(catId => {
+        categorySales[catId] = (categorySales[catId] || 0) + (item.priceUSD * item.quantity);
+      });
     });
   });
 
@@ -42,10 +44,12 @@ export default function Analytics() {
   orders.forEach((o) => {
     o.items.forEach((item) => {
       const prod = products.find(p => p.id === item.productId);
-      const catId = prod?.category || "other";
+      const categories = Array.isArray(prod?.category) ? prod.category : (prod?.category ? [prod.category] : ["other"]);
       const cost = (prod?.costUSD || 0) * item.quantity;
       const sales = item.priceUSD * item.quantity;
-      categoryProfit[catId] = (categoryProfit[catId] || 0) + (sales - cost);
+      categories.forEach(catId => {
+        categoryProfit[catId] = (categoryProfit[catId] || 0) + (sales - cost);
+      });
     });
   });
 
@@ -285,7 +289,7 @@ export default function Analytics() {
           </div>
 
           <div className="space-y-3.5">
-            {CATEGORIES.map((cat) => {
+            {categories.map((cat) => {
               const sales = categorySales[cat.id] || 0;
               const percent = totalSales > 0 ? (sales / totalSales) * 100 : 0;
               return (
@@ -314,7 +318,7 @@ export default function Analytics() {
           </div>
 
           <div className="space-y-3.5">
-            {CATEGORIES.map((cat) => {
+            {categories.map((cat) => {
               const profit = categoryProfit[cat.id] || 0;
               const percent = netProfit > 0 ? (profit / netProfit) * 100 : 0;
               return (

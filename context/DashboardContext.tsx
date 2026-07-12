@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 
 export interface ProductColor {
   nameEn: string;
@@ -14,7 +14,7 @@ export interface Product {
   nameBn: string;
   descriptionEn: string;
   descriptionBn: string;
-  category: "cat_hot" | "cat_women" | "cat_men" | "cat_shoes" | "cat_watches" | "cat_kids";
+  category: string | string[];
   costUSD: number; // Kena Price (Buying Price)
   priceUSD: number; // Sell Price
   discountPercent: number;
@@ -63,10 +63,18 @@ export interface AdminUser {
   lastLogin: string;
 }
 
+export interface Category {
+  id: string;
+  nameEn: string;
+  nameBn: string;
+  image: string;
+}
+
 interface DashboardContextType {
   products: Product[];
   orders: Order[];
   trafficData: TrafficData[];
+  categories: Category[];
   adminUser: AdminUser;
   isAuthenticated: boolean;
   loginError: string | null;
@@ -77,6 +85,9 @@ interface DashboardContextType {
   addProduct: (product: Omit<Product, "id" | "rating" | "reviewsCount">) => void;
   updateProduct: (id: string, updatedProduct: Partial<Product>) => void;
   deleteProduct: (id: string) => void;
+  addCategory: (categoryData: Omit<Category, "id">) => Promise<void>;
+  updateCategory: (id: string, updatedCategory: Partial<Category>) => Promise<void>;
+  deleteCategory: (id: string) => Promise<void>;
   updateOrderStatus: (id: string, status: "Pending" | "Shipped" | "Delivered") => void;
   simulatePurchase: () => void;
   clearNotification: () => void;
@@ -241,78 +252,78 @@ const INITIAL_PRODUCTS: Product[] = [
 
 // Preset initial simulated orders
 const INITIAL_ORDERS: Order[] = [
-  {
-    id: "ORD-2891",
-    customerName: "Rifat Hasan",
-    customerEmail: "rifat@gmail.com",
-    customerAddress: "Dhanmondi, Dhaka, Bangladesh",
-    items: [
-      {
-        productId: "prod-hot-1",
-        nameEn: "Chic Woolen Knitted Cardigan",
-        nameBn: "চটকদার উলের বোনা কার্ডিগান",
-        priceUSD: 59.99,
-        quantity: 1,
-        size: "M",
-        colorEn: "Creamy Beige"
-      }
-    ],
-    totalUSD: 59.99,
-    costUSD: 28.50,
-    createdAt: new Date(Date.now() - 3600000 * 2).toISOString(), // 2 hours ago
-    status: "Pending"
-  },
-  {
-    id: "ORD-2890",
-    customerName: "Anika Rahman",
-    customerEmail: "anika@yahoo.com",
-    customerAddress: "Gulshan-2, Dhaka, Bangladesh",
-    items: [
-      {
-        productId: "prod-women-1",
-        nameEn: "Vintage Floral Summer Maxi Dress",
-        nameBn: "ভিন্টেজ ফ্লোরাল সামার ম্যাক্সি ড্রেস",
-        priceUSD: 49.99,
-        quantity: 2,
-        size: "S",
-        colorEn: "Peach Puff"
-      }
-    ],
-    totalUSD: 99.98,
-    costUSD: 40.00,
-    createdAt: new Date(Date.now() - 3600000 * 6).toISOString(), // 6 hours ago
-    status: "Shipped"
-  },
-  {
-    id: "ORD-2889",
-    customerName: "Tahsan Chowdhury",
-    customerEmail: "tahsan@outlook.com",
-    customerAddress: "Nasirabad, Chittagong, Bangladesh",
-    items: [
-      {
-        productId: "prod-shoes-1",
-        nameEn: "Ultra-Lightweight Athletic Sneakers",
-        nameBn: "আল্ট্রা-লাইটওয়েট অ্যাথলেটিক স্নিকার্স",
-        priceUSD: 79.99,
-        quantity: 1,
-        size: "42",
-        colorEn: "Stealth Black"
-      },
-      {
-        productId: "prod-hot-2",
-        nameEn: "Casual Linen Shirt Long Sleeve",
-        nameBn: "ক্যাজুয়াল লিনেন শার্ট ফুল হাতা",
-        priceUSD: 39.99,
-        quantity: 1,
-        size: "L",
-        colorEn: "Ocean Blue"
-      }
-    ],
-    totalUSD: 119.98,
-    costUSD: 51.00,
-    createdAt: new Date(Date.now() - 3600000 * 24).toISOString(), // 24 hours ago
-    status: "Delivered"
-  }
+  // {
+  //   id: "ORD-2891",
+  //   customerName: "Rifat Hasan",
+  //   customerEmail: "rifat@gmail.com",
+  //   customerAddress: "Dhanmondi, Dhaka, Bangladesh",
+  //   items: [
+  //     {
+  //       productId: "prod-hot-1",
+  //       nameEn: "Chic Woolen Knitted Cardigan",
+  //       nameBn: "চটকদার উলের বোনা কার্ডিগান",
+  //       priceUSD: 59.99,
+  //       quantity: 1,
+  //       size: "M",
+  //       colorEn: "Creamy Beige"
+  //     }
+  //   ],
+  //   totalUSD: 59.99,
+  //   costUSD: 28.50,
+  //   createdAt: new Date(Date.now() - 3600000 * 2).toISOString(), // 2 hours ago
+  //   status: "Pending"
+  // },
+  // {
+  //   id: "ORD-2890",
+  //   customerName: "Anika Rahman",
+  //   customerEmail: "anika@yahoo.com",
+  //   customerAddress: "Gulshan-2, Dhaka, Bangladesh",
+  //   items: [
+  //     {
+  //       productId: "prod-women-1",
+  //       nameEn: "Vintage Floral Summer Maxi Dress",
+  //       nameBn: "ভিন্টেজ ফ্লোরাল সামার ম্যাক্সি ড্রেস",
+  //       priceUSD: 49.99,
+  //       quantity: 2,
+  //       size: "S",
+  //       colorEn: "Peach Puff"
+  //     }
+  //   ],
+  //   totalUSD: 99.98,
+  //   costUSD: 40.00,
+  //   createdAt: new Date(Date.now() - 3600000 * 6).toISOString(), // 6 hours ago
+  //   status: "Shipped"
+  // },
+  // {
+  //   id: "ORD-2889",
+  //   customerName: "Tahsan Chowdhury",
+  //   customerEmail: "tahsan@outlook.com",
+  //   customerAddress: "Nasirabad, Chittagong, Bangladesh",
+  //   items: [
+  //     {
+  //       productId: "prod-shoes-1",
+  //       nameEn: "Ultra-Lightweight Athletic Sneakers",
+  //       nameBn: "আল্ট্রা-লাইটওয়েট অ্যাথলেটিক স্নিকার্স",
+  //       priceUSD: 79.99,
+  //       quantity: 1,
+  //       size: "42",
+  //       colorEn: "Stealth Black"
+  //     },
+  //     {
+  //       productId: "prod-hot-2",
+  //       nameEn: "Casual Linen Shirt Long Sleeve",
+  //       nameBn: "ক্যাজুয়াল লিনেন শার্ট ফুল হাতা",
+  //       priceUSD: 39.99,
+  //       quantity: 1,
+  //       size: "L",
+  //       colorEn: "Ocean Blue"
+  //     }
+  //   ],
+  //   totalUSD: 119.98,
+  //   costUSD: 51.00,
+  //   createdAt: new Date(Date.now() - 3600000 * 24).toISOString(), // 24 hours ago
+  //   status: "Delivered"
+  // }
 ];
 
 // 7 days preset traffic analytics
@@ -338,6 +349,7 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
   const [orders, setOrders] = useState<Order[]>(INITIAL_ORDERS);
   const [trafficData, setTrafficData] = useState<TrafficData[]>(INITIAL_TRAFFIC);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [adminUser, setAdminUser] = useState<AdminUser>(INITIAL_ADMIN);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [loginError, setLoginError] = useState<string | null>(null);
@@ -346,28 +358,31 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     try {
-      const [prodRes, ordRes, statRes] = await Promise.all([
+      const [prodRes, ordRes, statRes, catRes] = await Promise.all([
         fetch(`${apiBaseUrl}/api/products`),
         fetch(`${apiBaseUrl}/api/orders`),
-        fetch(`${apiBaseUrl}/api/analytics/stats`)
+        fetch(`${apiBaseUrl}/api/analytics/stats`),
+        fetch(`${apiBaseUrl}/api/categories`)
       ]);
 
-      if (prodRes.ok && ordRes.ok && statRes.ok) {
+      if (prodRes.ok && ordRes.ok && statRes.ok && catRes.ok) {
         const prodData = await prodRes.json();
         const ordData = await ordRes.json();
         const statData = await statRes.json();
+        const catData = await catRes.json();
 
         setProducts(prodData);
         setOrders(ordData);
         setTrafficData(statData.traffic);
         setRecentLogs(statData.recentLogs || []);
+        setCategories(catData);
       }
     } catch (e) {
       console.error("Failed to load dashboard data from Backend API", e);
     }
-  };
+  }, [apiBaseUrl]);
 
   // Load from localStorage
   useEffect(() => {
@@ -387,7 +402,7 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       const interval = setInterval(fetchDashboardData, 10000);
       return () => clearInterval(interval);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, fetchDashboardData]);
 
   const saveAdmin = (newAdmin: AdminUser) => {
     setAdminUser(newAdmin);
@@ -432,6 +447,56 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     const updated = { ...adminUser, name, email, avatar };
     saveAdmin(updated);
     triggerNotification("Admin profile updated successfully.", "success");
+  };
+
+  // Category CRUD
+  const addCategory = async (categoryData: Omit<Category, "id">) => {
+    try {
+      const res = await fetch(`${apiBaseUrl}/api/categories`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(categoryData)
+      });
+      if (res.ok) {
+        fetchDashboardData();
+        triggerNotification(`Category "${categoryData.nameEn}" added successfully.`, "success");
+      }
+    } catch (e) {
+      console.error("Failed to add category", e);
+    }
+  };
+
+  const updateCategory = async (id: string, updatedCategory: Partial<Category>) => {
+    try {
+      const res = await fetch(`${apiBaseUrl}/api/categories/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedCategory)
+      });
+      if (res.ok) {
+        fetchDashboardData();
+        triggerNotification(`Category was successfully updated.`, "success");
+      }
+    } catch (e) {
+      console.error("Failed to update category", e);
+    }
+  };
+
+  const deleteCategory = async (id: string) => {
+    const targetCat = categories.find((c) => c.id === id);
+    try {
+      const res = await fetch(`${apiBaseUrl}/api/categories/${id}`, {
+        method: "DELETE"
+      });
+      if (res.ok) {
+        fetchDashboardData();
+        if (targetCat) {
+          triggerNotification(`Category "${targetCat.nameEn}" deleted.`, "info");
+        }
+      }
+    } catch (e) {
+      console.error("Failed to delete category", e);
+    }
   };
 
   // Product CRUD
@@ -532,6 +597,7 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         products,
         orders,
         trafficData,
+        categories,
         adminUser,
         isAuthenticated,
         loginError,
@@ -542,6 +608,9 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         addProduct,
         updateProduct,
         deleteProduct,
+        addCategory,
+        updateCategory,
+        deleteCategory,
         updateOrderStatus,
         simulatePurchase,
         clearNotification,
