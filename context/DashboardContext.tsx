@@ -151,10 +151,10 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const fetchDashboardData = useCallback(async () => {
     try {
       const [prodRes, ordRes, statRes, catRes] = await Promise.all([
-        fetch(`${apiBaseUrl}/api/products`),
-        fetch(`${apiBaseUrl}/api/orders`),
-        fetch(`${apiBaseUrl}/api/analytics/stats`),
-        fetch(`${apiBaseUrl}/api/categories`)
+        fetch(`${apiBaseUrl}/api/products`, { cache: "no-store" }),
+        fetch(`${apiBaseUrl}/api/orders`, { cache: "no-store" }),
+        fetch(`${apiBaseUrl}/api/analytics/stats`, { cache: "no-store" }),
+        fetch(`${apiBaseUrl}/api/categories`, { cache: "no-store" })
       ]);
 
       if (prodRes.ok && ordRes.ok && statRes.ok && catRes.ok) {
