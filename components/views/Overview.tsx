@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useDashboard } from "../../context/DashboardContext";
 import { 
   TrendingUp, 
@@ -14,6 +14,69 @@ import {
 
 export default function Overview({ setCurrentView }: { setCurrentView: (view: string) => void }) {
   const { products, orders, trafficData } = useDashboard();
+
+  const rawApiUrl = 
+    process.env.NEXT_PUBLIC_API_URL || 
+    (typeof window !== "undefined" && window.location.hostname.includes("fashionlegacy.live") 
+      ? "https://fashion-legacy-backend.vercel.app" 
+      : "http://localhost:5000");
+  const apiBaseUrl = rawApiUrl.endsWith("/") ? rawApiUrl.slice(0, -1) : rawApiUrl;
+
+  const [flashSaleInput, setFlashSaleInput] = useState("");
+  const [flashSaleTimeLeft, setFlashSaleTimeLeft] = useState("");
+  const [saveSuccess, setSaveSuccess] = useState(false);
+
+  // Fetch current Flash Sale end date from Backend
+  useEffect(() => {
+    fetch(`${apiBaseUrl}/api/flash-sale`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.flashSaleEnd) {
+          const date = new Date(data.flashSaleEnd);
+          const pad = (n: number) => n.toString().padStart(2, '0');
+          const localStr = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+          setFlashSaleInput(localStr);
+        }
+      })
+      .catch(err => console.error("Failed to fetch flash sale target", err));
+  }, [apiBaseUrl]);
+
+  // Countdown status update timer
+  useEffect(() => {
+    if (!flashSaleInput) return;
+    const updateTime = () => {
+      const diff = Date.parse(flashSaleInput) - Date.now();
+      if (diff <= 0) {
+        setFlashSaleTimeLeft("Ended / Inactive");
+      } else {
+        const secs = Math.floor((diff / 1000) % 60);
+        const mins = Math.floor((diff / 1000 / 60) % 60);
+        const hrs = Math.floor(diff / 1000 / 60 / 60);
+        setFlashSaleTimeLeft(`${hrs}h ${mins}m ${secs}s remaining`);
+      }
+    };
+    updateTime();
+    const interval = setInterval(updateTime, 1000);
+    return () => clearInterval(interval);
+  }, [flashSaleInput]);
+
+  const handleSaveFlashSale = async () => {
+    if (!flashSaleInput) return;
+    try {
+      const isoStr = new Date(flashSaleInput).toISOString();
+      const res = await fetch(`${apiBaseUrl}/api/flash-sale`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ flashSaleEnd: isoStr })
+      });
+      if (res.ok) {
+        setSaveSuccess(true);
+        setTimeout(() => setSaveSuccess(false), 3000);
+      }
+    } catch (e) {
+      console.error("Failed to save flash sale", e);
+    }
+  };
 
   // Financial Summaries
   const totalSales = orders.reduce((acc, order) => acc + order.totalUSD, 0);
@@ -107,6 +170,37 @@ export default function Overview({ setCurrentView }: { setCurrentView: (view: st
           <div className="h-12 w-12 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600">
             <ShoppingBag size={20} />
           </div>
+        </div>
+      </div>
+
+      {/* Flash Sale Countdown Control Panel */}
+      <div className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6 hover:shadow-md transition-all">
+        <div className="space-y-1 text-left flex-1">
+          <h4 className="text-sm font-black text-slate-800 uppercase tracking-wide">Flash Sale Countdown Timer Control</h4>
+          <p className="text-xs text-slate-400">Configure the end date and time for the storefront live Flash Sale countdown</p>
+          {flashSaleTimeLeft && (
+            <p className="text-[11px] font-bold text-[#740108] bg-red-50 border border-red-100 rounded-lg px-2.5 py-1 inline-block mt-2">
+              Live Status: {flashSaleTimeLeft}
+            </p>
+          )}
+        </div>
+        <div className="flex items-center gap-3.5 flex-shrink-0 w-full md:w-auto">
+          <input
+            type="datetime-local"
+            value={flashSaleInput}
+            onChange={(e) => setFlashSaleInput(e.target.value)}
+            className="px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-brand-primary w-full md:w-56 text-slate-700 font-bold"
+          />
+          <button
+            onClick={handleSaveFlashSale}
+            className={`px-4.5 py-2.5 text-xs font-black uppercase tracking-wider rounded-xl transition-all cursor-pointer select-none flex-shrink-0 w-full md:w-auto text-center ${
+              saveSuccess 
+                ? "bg-emerald-600 text-white" 
+                : "bg-[#740108] hover:bg-[#5c0006] text-white shadow-md shadow-red-900/10 hover:scale-[1.02] active:scale-[0.98]"
+            }`}
+          >
+            {saveSuccess ? "Saved ✓" : "Save Countdown"}
+          </button>
         </div>
       </div>
 
