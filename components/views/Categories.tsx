@@ -23,8 +23,10 @@ export default function Categories() {
     if (imgStr.startsWith("/") && !imgStr.startsWith("/images/")) {
       const rawUrl = 
         process.env.NEXT_PUBLIC_API_URL || 
-        (typeof window !== "undefined" && window.location.hostname.includes("fashionlegacy.live") 
-          ? "https://fashion-legacy-backend.vercel.app" 
+        (typeof window !== "undefined"
+          ? (window.location.hostname.includes("fashionlegacy.live") 
+              ? "https://fashion-legacy-backend.vercel.app" 
+              : `http://${window.location.hostname}:5000`)
           : "http://localhost:5000");
       const apiBaseUrl = rawUrl.endsWith("/") ? rawUrl.slice(0, -1) : rawUrl;
       return `${apiBaseUrl}${imgStr}`;

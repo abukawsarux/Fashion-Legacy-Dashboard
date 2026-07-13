@@ -17,8 +17,10 @@ export default function Overview({ setCurrentView }: { setCurrentView: (view: st
 
   const rawApiUrl = 
     process.env.NEXT_PUBLIC_API_URL || 
-    (typeof window !== "undefined" && window.location.hostname.includes("fashionlegacy.live") 
-      ? "https://fashion-legacy-backend.vercel.app" 
+    (typeof window !== "undefined"
+      ? (window.location.hostname.includes("fashionlegacy.live") 
+          ? "https://fashion-legacy-backend.vercel.app" 
+          : `http://${window.location.hostname}:5000`)
       : "http://localhost:5000");
   const apiBaseUrl = rawApiUrl.endsWith("/") ? rawApiUrl.slice(0, -1) : rawApiUrl;
 

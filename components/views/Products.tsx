@@ -17,8 +17,10 @@ export default function Products() {
   const { products, addProduct, updateProduct, deleteProduct, categories } = useDashboard();
   const rawApiUrl = 
     process.env.NEXT_PUBLIC_API_URL || 
-    (typeof window !== "undefined" && window.location.hostname.includes("fashionlegacy.live") 
-      ? "https://fashion-legacy-backend.vercel.app" 
+    (typeof window !== "undefined"
+      ? (window.location.hostname.includes("fashionlegacy.live") 
+          ? "https://fashion-legacy-backend.vercel.app" 
+          : `http://${window.location.hostname}:5000`)
       : "http://localhost:5000");
   const apiBaseUrl = rawApiUrl.endsWith("/") ? rawApiUrl.slice(0, -1) : rawApiUrl;
   const [activeCategory, setActiveCategory] = useState<string>("all");
@@ -511,7 +513,7 @@ export default function Products() {
                       <div className="flex items-center gap-3 bg-white p-2 rounded-xl border border-slate-100 shadow-sm animate-in fade-in slide-in-from-bottom-2 duration-200">
                         <div className="h-10 w-10 relative rounded-lg overflow-hidden border border-slate-200 bg-slate-100 flex-shrink-0">
                           <img
-                            src={imageUrl.startsWith("/") && !imageUrl.startsWith("/images/") ? `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}${imageUrl}` : imageUrl}
+                            src={imageUrl.startsWith("/") && !imageUrl.startsWith("/images/") ? `${apiBaseUrl}${imageUrl}` : imageUrl}
                             alt="Preview"
                             className="w-full h-full object-cover"
                             onError={(e) => {
