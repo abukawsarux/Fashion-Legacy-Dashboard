@@ -20,13 +20,15 @@ interface SidebarProps {
   setCurrentView: (view: string) => void;
   collapsed: boolean;
   setCollapsed: (collapsed: boolean) => void;
+  className?: string;
 }
 
 export default function Sidebar({ 
   currentView, 
   setCurrentView, 
   collapsed, 
-  setCollapsed 
+  setCollapsed,
+  className
 }: SidebarProps) {
   
   const menuItems = [
@@ -42,7 +44,7 @@ export default function Sidebar({
     <aside 
       className={`fixed top-0 left-0 z-30 h-screen bg-slate-900 text-slate-100 border-r border-slate-800 transition-all duration-300 flex flex-col ${
         collapsed ? "w-20" : "w-64"
-      }`}
+      } ${className || ""}`}
     >
       {/* Brand Header */}
       <div className="h-16 flex items-center justify-between px-4 border-b border-slate-800/20 relative bg-white">

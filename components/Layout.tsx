@@ -72,7 +72,7 @@ export default function Layout() {
         <div className="absolute top-1/4 left-1/4 h-72 w-72 rounded-full bg-[#740108]/5 blur-3xl" />
         <div className="absolute bottom-1/4 right-1/4 h-72 w-72 rounded-full bg-slate-200/50 blur-3xl" />
 
-        <div className="relative z-10 w-full max-w-md bg-white border border-slate-200 p-8 rounded-3xl shadow-2xl space-y-6 animate-in fade-in zoom-in-95 duration-300">
+        <div className="relative z-10 w-full max-w-md bg-white border border-slate-200 p-6 sm:p-8 rounded-3xl shadow-2xl space-y-6 animate-in fade-in zoom-in-95 duration-300">
           
           {/* Brand header */}
           <div className="flex flex-col items-center gap-3 text-center">
@@ -148,6 +148,7 @@ export default function Layout() {
         setCurrentView={setCurrentView} 
         collapsed={sidebarCollapsed} 
         setCollapsed={setSidebarCollapsed} 
+        className="hidden md:flex"
       />
 
       {/* Mobile Drawer Sidebar Overlay */}
@@ -169,6 +170,7 @@ export default function Layout() {
               }}
               collapsed={false}
               setCollapsed={() => {}}
+              className="flex"
             />
           </div>
         </div>
