@@ -104,6 +104,7 @@ export const CATEGORIES = [
   { id: "cat_shoes", nameEn: "Shoes", nameBn: "জুতো কালেকশন" },
   { id: "cat_watches", nameEn: "Watches & Acc.", nameBn: "ঘড়ি ও অ্যাক্সেসরিজ" },
   { id: "cat_kids", nameEn: "Kids & Toys", nameBn: "বাচ্চাদের খেলনা ও পোশাক" },
+  { id: "cat_flash", nameEn: "Flash Sale", nameBn: "ফ্ল্যাশ সেল" }
 ] as const;
 
 // Preset initial products with cost (buying) and price (selling)

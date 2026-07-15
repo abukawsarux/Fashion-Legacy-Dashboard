@@ -593,10 +593,16 @@ export default function Products() {
                         key={c.id}
                         type="button"
                         onClick={() => {
-                          const updated = category.includes(c.id)
-                            ? category.filter(id => id !== c.id)
-                            : [...category, c.id];
-                          if (updated.length === 0) return; // Must select at least one
+                          let updated;
+                          if (c.id === "cat_flash") {
+                            updated = ["cat_flash"];
+                          } else {
+                            const filtered = category.filter(id => id !== "cat_flash");
+                            updated = category.includes(c.id)
+                              ? filtered.filter(id => id !== c.id)
+                              : [...filtered, c.id];
+                          }
+                          if (updated.length === 0) updated = ["cat_hot"];
                           setCategory(updated);
                         }}
                         className={`px-3.5 py-2.5 rounded-xl border text-xs font-bold transition-all flex items-center gap-2 cursor-pointer select-none ${
@@ -909,10 +915,16 @@ export default function Products() {
                         key={c.id}
                         type="button"
                         onClick={() => {
-                          const updated = category.includes(c.id)
-                            ? category.filter(id => id !== c.id)
-                            : [...category, c.id];
-                          if (updated.length === 0) return; // Must select at least one
+                          let updated;
+                          if (c.id === "cat_flash") {
+                            updated = ["cat_flash"];
+                          } else {
+                            const filtered = category.filter(id => id !== "cat_flash");
+                            updated = category.includes(c.id)
+                              ? filtered.filter(id => id !== c.id)
+                              : [...filtered, c.id];
+                          }
+                          if (updated.length === 0) updated = ["cat_hot"];
                           setCategory(updated);
                         }}
                         className={`px-3.5 py-2.5 rounded-xl border text-xs font-bold transition-all flex items-center gap-2 cursor-pointer select-none ${
