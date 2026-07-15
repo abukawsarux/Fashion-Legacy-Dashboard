@@ -24,7 +24,7 @@ export default function Categories() {
       const rawUrl = 
         process.env.NEXT_PUBLIC_API_URL || 
         (typeof window !== "undefined"
-          ? (window.location.hostname.includes("fashionlegacy.live") 
+          ? (window.location.hostname.includes("fashionlegacy.live") || window.location.hostname.includes("vercel.app")
               ? "https://fashion-legacy-backend.vercel.app" 
               : `http://${window.location.hostname}:5000`)
           : "http://localhost:5000");
