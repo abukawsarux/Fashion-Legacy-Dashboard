@@ -67,27 +67,67 @@ export default function Categories() {
     setUploadError("");
   };
 
+  // Utility to compress image file using Canvas
+  const compressImage = (file: File, maxWidth: number = 800, maxHeight: number = 800, quality: number = 0.7): Promise<string> => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new window.Image();
+        img.src = event.target?.result as string;
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > maxWidth) {
+              height = Math.round((height * maxWidth) / width);
+              width = maxWidth;
+            }
+          } else {
+            if (height > maxHeight) {
+              width = Math.round((width * maxHeight) / height);
+              height = maxHeight;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) {
+            resolve(event.target?.result as string);
+            return;
+          }
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL("image/jpeg", quality));
+        };
+        img.onerror = () => {
+          resolve(event.target?.result as string); // fallback on load error
+        };
+      };
+      reader.onerror = () => {
+        resolve(""); // fallback
+      };
+    });
+  };
+
   // Image Upload handler (Base64)
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 10 * 1024 * 1024) { // 10MB limit
-      setUploadError("Image is too large. Max limit is 10MB.");
-      return;
-    }
-
     setUploadError("");
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      if (typeof reader.result === "string") {
-        setImage(reader.result);
+    try {
+      const compressedBase64 = await compressImage(file);
+      if (compressedBase64) {
+        setImage(compressedBase64);
+      } else {
+        setUploadError("Failed to compress image.");
       }
-    };
-    reader.onerror = () => {
+    } catch (err) {
       setUploadError("Failed to parse image file.");
-    };
-    reader.readAsDataURL(file);
+    }
   };
 
   // Create submission

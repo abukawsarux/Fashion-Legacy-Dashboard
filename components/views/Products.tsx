@@ -52,43 +52,83 @@ export default function Products() {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
+  // Utility to compress image file using Canvas
+  const compressImage = (file: File, maxWidth: number = 800, maxHeight: number = 800, quality: number = 0.7): Promise<string> => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new window.Image();
+        img.src = event.target?.result as string;
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > maxWidth) {
+              height = Math.round((height * maxWidth) / width);
+              width = maxWidth;
+            }
+          } else {
+            if (height > maxHeight) {
+              width = Math.round((width * maxHeight) / height);
+              height = maxHeight;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) {
+            resolve(event.target?.result as string);
+            return;
+          }
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL("image/jpeg", quality));
+        };
+        img.onerror = () => {
+          resolve(event.target?.result as string); // fallback on load error
+        };
+      };
+      reader.onerror = () => {
+        resolve(""); // fallback
+      };
+    });
+  };
+
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 5 * 1024 * 1024) {
-      setUploadError("Image must be smaller than 5MB.");
-      return;
-    }
-
     setIsUploading(true);
     setUploadError(null);
 
-    const reader = new FileReader();
-    reader.onloadend = async () => {
-      try {
-        const base64String = reader.result as string;
-        const res = await fetch(`${apiBaseUrl}/api/products/upload`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ image: base64String })
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-          setImageUrl(data.imageUrl);
-        } else {
-          const errData = await res.json();
-          setUploadError(errData.error || "Upload failed.");
-        }
-      } catch (err) {
-        console.error("Upload error", err);
-        setUploadError("Failed to upload image. Server unreachable.");
-      } finally {
-        setIsUploading(false);
+    try {
+      const base64String = await compressImage(file);
+      if (!base64String) {
+        throw new Error("Failed to compress image.");
       }
-    };
-    reader.readAsDataURL(file);
+
+      const res = await fetch(`${apiBaseUrl}/api/products/upload`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image: base64String })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setImageUrl(data.imageUrl);
+      } else {
+        const errData = await res.json();
+        setUploadError(errData.error || "Upload failed.");
+      }
+    } catch (err) {
+      console.error("Upload error", err);
+      setUploadError("Failed to upload image. Server unreachable or compression failed.");
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   // Filtering products
