@@ -257,7 +257,7 @@ export default function Products() {
         {/* Add Product Button */}
         <button
           onClick={openCreateDialog}
-          className="flex items-center justify-center gap-1.5 px-4 py-2.5 bg-[#740108] hover:bg-[#5c0006] text-white rounded-xl text-xs font-black tracking-wide shadow-md shadow-red-950/20 hover:scale-[1.02] transition-all cursor-pointer"
+          className="flex items-center justify-center gap-1.5 px-4 py-2.5 bg-[#D4A017] hover:bg-[#5c0006] text-white rounded-xl text-xs font-black tracking-wide shadow-md shadow-red-950/20 hover:scale-[1.02] transition-all cursor-pointer"
         >
           <Plus size={16} />
           <span>Add New Product</span>
@@ -561,12 +561,12 @@ export default function Products() {
                         }}
                         className={`px-3.5 py-2.5 rounded-xl border text-xs font-bold transition-all flex items-center gap-2 cursor-pointer select-none ${
                           isSelected
-                            ? "border-[#740108] bg-[#740108]/5 text-[#740108] font-black"
+                            ? "border-[#D4A017] bg-[#D4A017]/5 text-[#D4A017] font-black"
                             : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
                         }`}
                       >
                         <div className={`w-3.5 h-3.5 rounded border flex items-center justify-center transition-colors ${
-                          isSelected ? "border-[#740108] bg-[#740108]" : "border-slate-300 bg-white"
+                          isSelected ? "border-[#D4A017] bg-[#D4A017]" : "border-slate-300 bg-white"
                         }`}>
                           {isSelected && <Check size={10} className="text-white font-black" />}
                         </div>
@@ -714,7 +714,7 @@ export default function Products() {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-[#740108] hover:bg-[#5c0006] text-white rounded-xl text-xs font-bold cursor-pointer shadow-md"
+                  className="px-5 py-2 bg-[#D4A017] hover:bg-[#5c0006] text-white rounded-xl text-xs font-bold cursor-pointer shadow-md"
                 >
                   Save Product
                 </button>
@@ -877,12 +877,12 @@ export default function Products() {
                         }}
                         className={`px-3.5 py-2.5 rounded-xl border text-xs font-bold transition-all flex items-center gap-2 cursor-pointer select-none ${
                           isSelected
-                            ? "border-[#740108] bg-[#740108]/5 text-[#740108] font-black"
+                            ? "border-[#D4A017] bg-[#D4A017]/5 text-[#D4A017] font-black"
                             : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
                         }`}
                       >
                         <div className={`w-3.5 h-3.5 rounded border flex items-center justify-center transition-colors ${
-                          isSelected ? "border-[#740108] bg-[#740108]" : "border-slate-300 bg-white"
+                          isSelected ? "border-[#D4A017] bg-[#D4A017]" : "border-slate-300 bg-white"
                         }`}>
                           {isSelected && <Check size={10} className="text-white font-black" />}
                         </div>
@@ -1020,7 +1020,7 @@ export default function Products() {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-[#740108] hover:bg-[#5c0006] text-white rounded-xl text-xs font-bold cursor-pointer shadow-md"
+                  className="px-5 py-2 bg-[#D4A017] hover:bg-[#5c0006] text-white rounded-xl text-xs font-bold cursor-pointer shadow-md"
                 >
                   Update Product
                 </button>

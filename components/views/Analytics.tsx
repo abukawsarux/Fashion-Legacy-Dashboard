@@ -130,7 +130,7 @@ export default function Analytics() {
         </div>
         <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-2">
           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Net Revenue Earnings</span>
-          <div className="text-2xl font-black text-[#740108]">৳{netProfit.toFixed(2)}</div>
+          <div className="text-2xl font-black text-[#D4A017]">৳{netProfit.toFixed(2)}</div>
           <div className="text-[10px] text-emerald-600 font-semibold">Net margin: {totalSales > 0 ? ((netProfit/totalSales)*100).toFixed(0) : 0}%</div>
         </div>
       </div>
@@ -147,7 +147,7 @@ export default function Analytics() {
             <button
               onClick={() => setActiveChart("financial")}
               className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                activeChart === "financial" ? "bg-white text-[#740108] shadow-sm" : "text-slate-600"
+                activeChart === "financial" ? "bg-white text-[#D4A017] shadow-sm" : "text-slate-600"
               }`}
             >
               Financial (Buy vs Sell vs Profit)
@@ -155,7 +155,7 @@ export default function Analytics() {
             <button
               onClick={() => setActiveChart("traffic")}
               className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                activeChart === "traffic" ? "bg-white text-[#740108] shadow-sm" : "text-slate-600"
+                activeChart === "traffic" ? "bg-white text-[#D4A017] shadow-sm" : "text-slate-600"
               }`}
             >
               User Traffic (Weekly Visitors)

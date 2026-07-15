@@ -181,7 +181,7 @@ export default function Overview({ setCurrentView }: { setCurrentView: (view: st
           <h4 className="text-sm font-black text-slate-800 uppercase tracking-wide">Flash Sale Countdown Timer Control</h4>
           <p className="text-xs text-slate-400">Configure the end date and time for the storefront live Flash Sale countdown</p>
           {flashSaleTimeLeft && (
-            <p className="text-[11px] font-bold text-[#740108] bg-red-50 border border-red-100 rounded-lg px-2.5 py-1 inline-block mt-2">
+            <p className="text-[11px] font-bold text-[#D4A017] bg-red-50 border border-red-100 rounded-lg px-2.5 py-1 inline-block mt-2">
               Live Status: {flashSaleTimeLeft}
             </p>
           )}
@@ -198,7 +198,7 @@ export default function Overview({ setCurrentView }: { setCurrentView: (view: st
             className={`px-4.5 py-2.5 text-xs font-black uppercase tracking-wider rounded-xl transition-all cursor-pointer select-none flex-shrink-0 w-full md:w-auto text-center ${
               saveSuccess 
                 ? "bg-emerald-600 text-white" 
-                : "bg-[#740108] hover:bg-[#5c0006] text-white shadow-md shadow-red-900/10 hover:scale-[1.02] active:scale-[0.98]"
+                : "bg-[#D4A017] hover:bg-[#5c0006] text-white shadow-md shadow-red-900/10 hover:scale-[1.02] active:scale-[0.98]"
             }`}
           >
             {saveSuccess ? "Saved ✓" : "Save Countdown"}
@@ -235,8 +235,8 @@ export default function Overview({ setCurrentView }: { setCurrentView: (view: st
               {/* Gradient background fill */}
               <defs>
                 <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#740108" stopOpacity="0.2"/>
-                  <stop offset="100%" stopColor="#740108" stopOpacity="0.0"/>
+                  <stop offset="0%" stopColor="#D4A017" stopOpacity="0.2"/>
+                  <stop offset="100%" stopColor="#D4A017" stopOpacity="0.0"/>
                 </linearGradient>
               </defs>
               
@@ -248,7 +248,7 @@ export default function Overview({ setCurrentView }: { setCurrentView: (view: st
               {fillD && <path d={fillD} fill="url(#areaGradient)" />}
 
               {/* Line path */}
-              {pathD && <path d={pathD} fill="none" stroke="#740108" strokeWidth="2.5" strokeLinecap="round" />}
+              {pathD && <path d={pathD} fill="none" stroke="#D4A017" strokeWidth="2.5" strokeLinecap="round" />}
 
               {/* Dot points */}
               {points.map((p, idx) => (
@@ -258,7 +258,7 @@ export default function Overview({ setCurrentView }: { setCurrentView: (view: st
                     cy={p.y} 
                     r="4" 
                     fill="#ffffff" 
-                    stroke="#740108" 
+                    stroke="#D4A017" 
                     strokeWidth="2" 
                     className="transition-all hover:r-6 cursor-pointer"
                   />
@@ -267,7 +267,7 @@ export default function Overview({ setCurrentView }: { setCurrentView: (view: st
                     <text 
                       x={p.x - 20} 
                       y={p.y - 12} 
-                      fill="#740108" 
+                      fill="#D4A017" 
                       fontSize="9" 
                       fontWeight="bold"
                     >

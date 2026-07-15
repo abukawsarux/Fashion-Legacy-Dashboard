@@ -241,7 +241,7 @@ export default function Orders() {
                 {/* Right: Profit Margin & Fulfillment Status Tool */}
                 <div className="md:w-60 md:border-l md:border-slate-100 md:pl-6 flex flex-col justify-between gap-4">
                   {/* Financial outputs */}
-                  <div className="p-4 rounded-xl bg-[#740108]/5 border border-[#740108]/10 space-y-2">
+                  <div className="p-4 rounded-xl bg-[#D4A017]/5 border border-[#D4A017]/10 space-y-2">
                     <div className="flex justify-between text-xs">
                       <span className="text-slate-500 font-semibold">Total Revenue:</span>
                       <span className="font-bold text-slate-800">৳{order.totalUSD.toFixed(2)}</span>

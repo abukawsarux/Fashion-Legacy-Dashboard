@@ -157,7 +157,7 @@ export default function Categories() {
             resetForm();
             setIsCreateOpen(true);
           }}
-          className="flex items-center gap-2 px-4 py-2.5 bg-[#740108] hover:bg-[#5c0006] text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-lg shadow-red-900/10 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer select-none"
+          className="flex items-center gap-2 px-4 py-2.5 bg-[#D4A017] hover:bg-[#5c0006] text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-lg shadow-red-900/10 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer select-none"
         >
           <Plus size={14} strokeWidth={2.5} />
           <span>Add New Category</span>
@@ -323,7 +323,7 @@ export default function Categories() {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-[#740108] hover:bg-[#5c0006] text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-lg shadow-red-900/10 cursor-pointer select-none"
+                  className="px-4 py-2 bg-[#D4A017] hover:bg-[#5c0006] text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-lg shadow-red-900/10 cursor-pointer select-none"
                 >
                   Add Category
                 </button>
@@ -416,7 +416,7 @@ export default function Categories() {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-[#740108] hover:bg-[#5c0006] text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-lg shadow-red-900/10 cursor-pointer select-none"
+                  className="px-4 py-2 bg-[#D4A017] hover:bg-[#5c0006] text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-lg shadow-red-900/10 cursor-pointer select-none"
                 >
                   Save Changes
                 </button>

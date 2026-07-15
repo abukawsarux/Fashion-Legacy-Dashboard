@@ -144,7 +144,7 @@ export default function Profile() {
             <div className="pt-2 border-t border-slate-100 flex justify-end">
               <button
                 type="submit"
-                className="px-5 py-2.5 bg-[#740108] hover:bg-[#5c0006] text-white rounded-xl text-xs font-bold shadow-md cursor-pointer"
+                className="px-5 py-2.5 bg-[#D4A017] hover:bg-[#5c0006] text-white rounded-xl text-xs font-bold shadow-md cursor-pointer"
               >
                 Save Details
               </button>

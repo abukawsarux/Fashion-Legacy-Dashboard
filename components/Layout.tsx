@@ -69,7 +69,7 @@ export default function Layout() {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 relative overflow-hidden">
         {/* Absolute design backdrops */}
-        <div className="absolute top-1/4 left-1/4 h-72 w-72 rounded-full bg-[#740108]/5 blur-3xl" />
+        <div className="absolute top-1/4 left-1/4 h-72 w-72 rounded-full bg-[#D4A017]/5 blur-3xl" />
         <div className="absolute bottom-1/4 right-1/4 h-72 w-72 rounded-full bg-slate-200/50 blur-3xl" />
 
         <div className="relative z-10 w-full max-w-md bg-white border border-slate-200 p-6 sm:p-8 rounded-3xl shadow-2xl space-y-6 animate-in fade-in zoom-in-95 duration-300">
@@ -129,7 +129,7 @@ export default function Layout() {
 
             <button
               type="submit"
-              className="w-full py-2.5 bg-[#740108] hover:bg-[#5c0006] text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-lg shadow-red-900/10 hover:scale-[1.01] transition-all cursor-pointer"
+              className="w-full py-2.5 bg-[#D4A017] hover:bg-[#5c0006] text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-lg shadow-red-900/10 hover:scale-[1.01] transition-all cursor-pointer"
             >
               Authenticate Portal
             </button>

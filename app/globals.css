@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand-primary: #740108;
+  --color-brand-primary: #D4A017;
   --color-brand-primary-hover: #5c0006;
   --color-brand-light: #fdf2f2;
   --color-brand-accent: #b22234;
@@ -59,7 +59,7 @@ body {
   content: '';
   position: absolute;
   inset: -2px;
-  background: linear-gradient(135deg, #740108, #b22234);
+  background: linear-gradient(135deg, #D4A017, #b22234);
   border-radius: inherit;
   z-index: -1;
   opacity: 0;
